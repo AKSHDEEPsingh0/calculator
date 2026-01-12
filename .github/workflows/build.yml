@@ -34,3 +34,10 @@ jobs:
       with:
         name: build-log
         path: build_log.txt
+    
+# 5. Upload the JAR file as an artifact
+    - name: Upload JAR File
+      uses: actions/upload-artifact@v4
+      with:
+        name: calculator-app
+        path: target/*.jar
