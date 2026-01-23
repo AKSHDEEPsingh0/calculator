@@ -7,22 +7,26 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-display-goals:
     runs-on: ubuntu-latest
-
     steps:
-    # Step 1: Check out the code from the repository
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Set up Java JDK (Using Java 17 as an example)
+    # UPDATE THIS STEP: Configure the server-id for authentication
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+        server-id: github # Must match <id> in pom.xml
+        settings-path: ${{ github.workspace }} # Location for the generated settings.xml
 
     # Step 3: Maven Goal 1 - Clean
     # Removes the target directory (previous build artifacts)
@@ -64,9 +68,15 @@ jobs:
     - name: 8. Site
       run: mvn site
 
-    # Step 11: Maven Goal 9 - Deploy
-    # Copies the final package to the remote repository
-    # Note: This step may fail or do nothing if no distributionManagement is configured in pom.xml. 
-    # We use -DskipTests to save time as tests ran in Step 6.
+    # Add permissions at the top level of your YAML file (before 'jobs')
+
+
+
+    # ... (Steps 1 through 8 remain the same) ...
+
+    # UPDATE THIS STEP: Step 11 - Deploy with Authentication
     - name: 9. Deploy
-      run: mvn deploy -DskipTests
+      run: mvn deploy -DskipTests -s $GITHUB_WORKSPACE/settings.xml
+      env:
+        # This token is automatically provided by GitHub Actions
+        GITHUB_TOKEN: ${{ secrets.MAVEN_TOKEN }}
