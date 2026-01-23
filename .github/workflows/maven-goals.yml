@@ -1,21 +1,60 @@
-name: Auto Deploy
-on: [push]
+name: Maven 9 Goals (Automatic Token)
 
+on:
+  push:
+    branches: [ "main" ]
+
+# Ye permission zaroori hai automatic deploy ke liye
 permissions:
   contents: read
   packages: write
 
 jobs:
-  publish:
+  build-all-goals:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          server-id: github
 
-      - run: mvn deploy -DskipTests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    # 1. Code ko Checkout karo
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 2. Java Setup karo (Server ID 'github' set kiya taaki automatic login ho sake)
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+        server-id: github # Ye pom.xml ke <id> se match karega
+
+    # --- 9 GOALS START ---
+
+    - name: 1. Clean
+      run: mvn clean
+
+    - name: 2. Validate
+      run: mvn validate
+
+    - name: 3. Compile
+      run: mvn compile
+
+    - name: 4. Test
+      run: mvn test
+
+    - name: 5. Package
+      run: mvn package
+
+    - name: 6. Verify
+      run: mvn verify
+
+    - name: 7. Install
+      run: mvn install
+
+    - name: 8. Site
+      run: mvn site
+
+    # Goal 9: Deploy (Automatic Token use karega)
+    - name: 9. Deploy
+      run: mvn deploy -DskipTests
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
