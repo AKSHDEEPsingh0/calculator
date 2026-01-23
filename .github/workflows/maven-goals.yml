@@ -1,0 +1,72 @@
+name: Maven 9-Goal Build Workflow
+
+# Trigger the workflow on push or pull request to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-display-goals:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the code from the repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Java JDK (Using Java 17 as an example)
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    # Step 3: Maven Goal 1 - Clean
+    # Removes the target directory (previous build artifacts)
+    - name: 1. Clean
+      run: mvn clean
+
+    # Step 4: Maven Goal 2 - Validate
+    # Checks if the project is correct and all necessary info is available
+    - name: 2. Validate
+      run: mvn validate
+
+    # Step 5: Maven Goal 3 - Compile
+    # Compiles the source code of the project
+    - name: 3. Compile
+      run: mvn compile
+
+    # Step 6: Maven Goal 4 - Test
+    # Runs the unit tests using a suitable testing framework
+    - name: 4. Test
+      run: mvn test
+
+    # Step 7: Maven Goal 5 - Package
+    # Takes the compiled code and packages it (e.g., JAR/WAR)
+    - name: 5. Package
+      run: mvn package
+
+    # Step 8: Maven Goal 6 - Verify
+    # Run checks to verify the package is valid and meets quality criteria
+    - name: 6. Verify
+      run: mvn verify
+
+    # Step 9: Maven Goal 7 - Install
+    # Installs the package into the local repository (for use as a dependency locally)
+    - name: 7. Install
+      run: mvn install
+
+    # Step 10: Maven Goal 8 - Site
+    # Generates project documentation
+    - name: 8. Site
+      run: mvn site
+
+    # Step 11: Maven Goal 9 - Deploy
+    # Copies the final package to the remote repository
+    # Note: This step may fail or do nothing if no distributionManagement is configured in pom.xml. 
+    # We use -DskipTests to save time as tests ran in Step 6.
+    - name: 9. Deploy
+      run: mvn deploy -DskipTests
