@@ -1,60 +1,58 @@
-name: Maven 9 Goals (Automatic Token)
+name: Maven 9 Goals Execution
 
 on:
   push:
     branches: [ "main" ]
-
-# Ye permission zaroori hai automatic deploy ke liye
-permissions:
-  contents: read
-  packages: write
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build-all-goals:
+  execute-maven-goals:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Code ko Checkout karo
+   
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # 2. Java Setup karo (Server ID 'github' set kiya taaki automatic login ho sake)
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-        server-id: github # Ye pom.xml ke <id> se match karega
-
-    # --- 9 GOALS START ---
-
+    # Goal 1: Clean - Removes previous build files
     - name: 1. Clean
       run: mvn clean
 
+    # Goal 2: Validate - Checks if project is correct
     - name: 2. Validate
       run: mvn validate
 
+    # Goal 3: Compile - Compiles the source code
     - name: 3. Compile
       run: mvn compile
 
+    # Goal 4: Test - Runs unit tests
     - name: 4. Test
       run: mvn test
 
+    # Goal 5: Package - Creates the JAR file
     - name: 5. Package
       run: mvn package
 
+    # Goal 6: Verify - Integration checks
     - name: 6. Verify
       run: mvn verify
 
+    # Goal 7: Install - Installs package to local repository
     - name: 7. Install
       run: mvn install
 
+    # Goal 8: Site - Generates documentation (might warn if no site plugin, but works)
     - name: 8. Site
       run: mvn site
 
-    # Goal 9: Deploy (Automatic Token use karega)
+    # Goal 9: Deploy - The "No Token" Trick
     - name: 9. Deploy
-      run: mvn deploy -DskipTests
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: mvn deploy -DaltDeploymentRepository=local-repo::default::file://staging
